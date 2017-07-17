@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDECodeSnippetCompletionScopes</key>
+	<array>
+		<string>TopLevel</string>
+	</array>
+	<key>IDECodeSnippetContents</key>
+	<string>import UIKit
+import SystemConfiguration
+
+extension NSObject {
+    
+    enum ReachabilityStatus {
+        case notReachable
+        case reachableViaWWAN
+        case reachableViaWiFi
+    }
+    
+    var currentReachabilityStatus: ReachabilityStatus {
+        var zeroAddress = sockaddr_in()
+        zeroAddress.sin_len = UInt8(MemoryLayout&lt;sockaddr_in&gt;.size)
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        
+        guard let defaultRouteReachability = withUnsafePointer(to: &amp;zeroAddress, {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                SCNetworkReachabilityCreateWithAddress(nil, $0)
+            }
+        }) else {
+            return .notReachable
+        }
+        
+        var flags : SCNetworkReachabilityFlags = []
+        
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability, &amp;flags) {
+            return .notReachable
+        }
+        
+        if flags.contains(.reachable) == false {
+            return .notReachable
+        }
+        else if flags.contains(.isWWAN) == true {
+            return .reachableViaWWAN
+        }
+        else if flags.contains(.connectionRequired) == false {
+            return .reachableViaWiFi
+        }
+        else if (flags.contains(.connectionOnDemand) == true || flags.contains(.connectionOnTraffic) == true) &amp;&amp; flags.contains(.interventionRequired) == false {
+            return .reachableViaWiFi
+        }
+        else {
+            return .notReachable
+        }
+    }
+}</string>
+	<key>IDECodeSnippetIdentifier</key>
+	<string>4BF5F4F1-59AE-40A4-8963-1DFE70821C34</string>
+	<key>IDECodeSnippetLanguage</key>
+	<string>Xcode.SourceCodeLanguage.Swift</string>
+	<key>IDECodeSnippetTitle</key>
+	<string>Check Reachability iOS</string>
+	<key>IDECodeSnippetUserSnippet</key>
+	<true/>
+	<key>IDECodeSnippetVersion</key>
+	<integer>0</integer>
+</dict>
+</plist>
